@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Ejercicios Fitracker</title>
+    <style>
+        /* Puedes copiar los estilos del <style> del server.js aquí o enlazar un CSS */
+        body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; line-height: 1.6; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        .info { font-size: 0.9em; color: #555; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <h1>Añadir Ejercicio Global</h1>
+    <form action="/add-exercise" method="POST">
+        <label for="group">Grupo Muscular:</label>
+        <input type="text" id="group" name="group" required placeholder="Ej: Pecho">
+        
+        <label for="baseId">ID Base (único, minúsculas, guiones):</label>
+        <input type="text" id="baseId" name="baseId" required pattern="[a-z0-9-]+" placeholder="ej: curl-biceps">
+
+        <label for="baseName">Nombre Base (Nivel 1):</label>
+        <input type="text" id="baseName" name="baseName" required placeholder="ej: Curl de Bíceps">
+
+        <div id="variations-container"></div>
+        <p class="info">Este formulario básico añade el ejercicio (Nivel 1). Para añadir variaciones (Nivel 2+), edita <code>src/exercisesData.json</code> después o mejora este formulario.</p>
+
+        <button type="submit">Añadir a GitHub</button>
+    </form>
+
+    <script>
+        // Aquí iría el JavaScript para añadir dinámicamente campos para variaciones,
+        // sub-variaciones, etc. Por ahora, está simplificado.
+        // function addVariationField() { ... }
+    </script>
+</body>
+</html>
