@@ -19,6 +19,13 @@ app.use(express.static('public')); // Servir HTML, CSS, JS estáticos
 
 // --- Helper: Obtener el JSON de ejercicios desde GitHub ---
 async function getExerciseDataFromGithub() {
+    console.log('--- INTENTANDO CARGAR DATOS DE GITHUB ---');
+    console.log('Leyendo variables de entorno:');
+    console.log('Owner:', owner);
+    console.log('Repo:', repo);
+    console.log('Path:', filePath);
+    console.log('Branch:', branch);
+    console.log('-----------------------------------------');
     console.log("GitHub API: Obteniendo", filePath);
     const { data: fileData } = await octokit.repos.getContent({
         owner, repo, path: filePath, ref: branch,
