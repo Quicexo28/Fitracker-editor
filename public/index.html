@@ -5,36 +5,485 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor Ejercicios Fitracker</title>
     <style>
-        /* Puedes copiar los estilos del <style> del server.js aquí o enlazar un CSS */
-        body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; line-height: 1.6; }
-        label { display: block; margin-top: 10px; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
-        .info { font-size: 0.9em; color: #555; margin-top: 15px; }
+        /* Estilos (Completos) */
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; padding: 15px; max-width: 900px; margin: auto; line-height: 1.5; background-color: #f8f9fa; color: #212529; }
+        h1, h2, h3, h4, h5 { color: #0d6efd; margin-top: 1.2em; margin-bottom: 0.4em;}
+        h1 { border-bottom: 1px solid #dee2e6; padding-bottom: 8px;}
+        h2 { border-bottom: 1px dashed #dee2e6; margin-top: 2em;}
+        h3 { font-size: 1.1em; color: #198754;} /* Verde */
+        h4 { font-size: 1em; color: #6f42c1;}   /* Morado */
+        h5 { font-size: 0.9em; color: #fd7e14;} /* Naranja */
+        form { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        label { display: block; margin-top: 8px; margin-bottom: 2px; font-weight: bold; color: #495057; font-size: 0.85em; }
+        input[type="text"], input[type="url"], select { width: 100%; padding: 8px; margin-top: 2px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.9rem; }
+        input[type="checkbox"] { margin-right: 5px; transform: scale(1.1); vertical-align: middle; }
+        button { background-color: #0d6efd; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px; font-size: 0.9rem; transition: background-color 0.2s ease; }
+        button:hover { background-color: #0b56d7; }
+        button.action-button { font-size: 0.8rem; padding: 5px 8px; margin-top: 8px; margin-right: 5px; }
+        button.add-level { background-color: #198754; }
+        button.add-level:hover { background-color: #157347; }
+        button.remove-button { background-color: #dc3545; }
+        button.remove-button:hover { background-color: #bb2d3b; }
+        button.reset-form { background-color: #6c757d; }
+        button.reset-form:hover { background-color: #5c636a; }
+        .info, .warning { font-size: 0.85em; margin-top: 15px; padding: 8px; border-radius: 4px; }
+        .info { color: #6c757d; background-color: #e9ecef; border: 1px solid #ced4da;}
+        .warning { color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba;}
+        .success, .error { padding: 15px; border-radius: 5px; margin-top: 20px; }
+        .success { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .error { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+        a { color: #0d6efd; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .nested-group { border-left: 3px solid; padding-left: 15px; margin-left: 5px; margin-top: 10px; }
+        .level-2 { border-color: #6ea8fe; background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px; position: relative; }
+        .level-3 { border-color: #a377ff; background-color: #faf8ff; padding: 8px; border-radius: 5px; margin-bottom: 8px; position: relative; }
+        .level-4 { border-color: #54e6a1; background-color: #f5fef9; padding: 6px; border-radius: 5px; margin-bottom: 6px; position: relative; }
+        .level-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+        .remove-button { font-size: 0.7rem; padding: 3px 6px; margin-left: 10px;}
+        .id-prefix { font-size: 0.85em; color: #6c757d; margin-right: 3px; user-select: none;}
+        .id-input-group { display: flex; align-items: center; }
+        .id-input-group input { flex-grow: 1; }
+        .loading { text-align: center; padding: 20px; font-style: italic; color: #6c757d; }
+        .hidden { display: none; }
+        #edit-exercise-selector { margin-bottom: 30px; background: #e9ecef; padding: 20px; border-radius: 5px; }
+        .selector-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .selector-row > div { flex: 1; min-width: 200px; }
     </style>
 </head>
 <body>
-    <h1>Añadir Ejercicio Global</h1>
-    <form action="/add-exercise" method="POST">
-        <label for="group">Grupo Muscular:</label>
-        <input type="text" id="group" name="group" required placeholder="Ej: Pecho">
-        
-        <label for="baseId">ID Base (único, minúsculas, guiones):</label>
-        <input type="text" id="baseId" name="baseId" required pattern="[a-z0-9-]+" placeholder="ej: curl-biceps">
+    <h1>Editor de Ejercicios Globales</h1>
 
-        <label for="baseName">Nombre Base (Nivel 1):</label>
-        <input type="text" id="baseName" name="baseName" required placeholder="ej: Curl de Bíceps">
+    <div id="loading-state" class="loading">Cargando lista de ejercicios...</div>
+    <div id="error-state" class="error hidden"></div>
 
-        <div id="variations-container"></div>
-        <p class="info">Este formulario básico añade el ejercicio (Nivel 1). Para añadir variaciones (Nivel 2+), edita <code>src/exercisesData.json</code> después o mejora este formulario.</p>
+    <div id="editor-content" class="hidden">
+        <div id="edit-exercise-selector">
+             <h3>Seleccionar Ejercicio para Editar (Opcional)</h3>
+             <div class="selector-row">
+                 <div>
+                     <label for="group-filter-select">Filtrar por Grupo Muscular:</label>
+                     <select id="group-filter-select" onchange="populateExerciseSelector(this.value)">
+                         <option value="">-- Todos los Grupos --</option>
+                     </select>
+                 </div>
+                 <div>
+                     <label for="exercise-select">Seleccionar Ejercicio Base:</label>
+                     <select id="exercise-select" onchange="loadExerciseForEdit(this.value)">
+                         <option value="">-- Añadir Nuevo Ejercicio --</option>
+                     </select>
+                 </div>
+             </div>
+              <button type="button" class="action-button reset-form" onclick="resetFormAndFetch()">Limpiar / Añadir Nuevo</button>
+         </div>
 
-        <button type="submit">Añadir a GitHub</button>
-    </form>
+        <form id="exercise-form" action="/save-exercise" method="POST">
+            <input type="hidden" id="editMode" name="editMode" value="false">
+            <input type="hidden" id="originalBaseId" name="originalBaseId" value="">
+            <input type="hidden" id="fileSha" name="fileSha" value="">
+
+            <h2>Ejercicio Base (Nivel 1)</h2>
+            <label for="group">Grupo Muscular:</label>
+            <input list="group-list" id="group" name="group" required placeholder="Ej: Pecho">
+            <datalist id="group-list"></datalist>
+
+            <label for="baseId">ID Base (único, minúsculas, guiones):</label>
+            <input type="text" id="baseId" name="baseId" required placeholder="ej: curl-biceps" oninput="handleIdInput(this); updateChildIdPrefixes(this, this.value);">
+
+            <label for="baseName">Nombre Base (Nivel 1):</label>
+            <input type="text" id="baseName" name="baseName" required placeholder="ej: Curl de Bíceps" onblur="suggestIdSuffix('baseId', this.id, '', true)">
+
+            <h2>Variaciones (Nivel 2: Tipo/Equipamiento)</h2>
+            <div id="variations-container"></div>
+            <button type="button" class="action-button add-level" onclick="addLevelElement('variation', 'variations-container', 'baseId')">+ Añadir Variación (Nivel 2)</button>
+
+            <button type="submit" id="save-button">Guardar Cambios en GitHub</button>
+        </form>
+    </div>
 
     <script>
-        // Aquí iría el JavaScript para añadir dinámicamente campos para variaciones,
-        // sub-variaciones, etc. Por ahora, está simplificado.
-        // function addVariationField() { ... }
+        // --- Variables Globales ---
+        let exerciseList = [];
+        let currentFileSha = '';
+        const form = document.getElementById('exercise-form');
+
+        // --- CONFIGURACIÓN DE NIVELES ---
+        const levelConfigs = {
+            variation: { levelName: 'Variación', levelNumber: 2, prefix: 'variations', dataKey: 'variations', containerSuffix: 'subvariations-container', cssClass: 'level-2', idPlaceholder: 'con-barra', namePlaceholder: 'Con Barra' },
+            subVariation: { levelName: 'Sub-Variación', levelNumber: 3, prefix: 'subVariations', dataKey: 'subVariations', containerSuffix: 'executiontypes-container', cssClass: 'level-3', idPlaceholder: 'sentado', namePlaceholder: 'Sentado' },
+            executionType: { levelName: 'Tipo Ejecución', levelNumber: 4, prefix: 'executionTypes', dataKey: 'executionTypes', containerSuffix: null, cssClass: 'level-4', idPlaceholder: 'unilateral', namePlaceholder: 'Unilateral' }
+        };
+        function getNextLevelKey(currentKey) {
+             if (currentKey === 'variation') return 'subVariation';
+             if (currentKey === 'subVariation') return 'executionType';
+             return null;
+         }
+
+        // --- FUNCIÓN PARA GENERAR SUFIJOS DE ID ---
+        function generateIdSuffix(name) {
+             if (!name) return '';
+             let suffix = name.toLowerCase();
+             const replacements = {
+                 'con mancuernas': 'dumbbell', 'mancuerna': 'dumbbell','mancuernas': 'dumbbell',
+                 'con barra': 'barbell', 'barra': 'barbell', 'barra z': 'ez-bar',
+                 'en polea': 'cable', 'polea': 'cable', 'con cuerda': 'rope',
+                 'en máquina': 'machine', 'máquina': 'machine', 'smith': 'smith', 'hack': 'hack',
+                 'sentado': 'seated', 'de pie': 'standing', 'tumbado': 'lying', 'acostado': 'lying',
+                 'inclinado': 'incline', 'declinado': 'decline', 'plano': 'flat',
+                 'unilateral': 'uni', 'bilateral': 'bi', 'alterno': 'alt', 'simultáneo': 'sim',
+                 'agarre ancho': 'wide-grip', 'agarre cerrado': 'close-grip',
+                 'agarre prono': 'pronated', 'agarre supino': 'supinated', 'agarre neutro': 'neutral',
+                 'trasera': 'back', 'frontal': 'front', 'lateral': 'lat', 'posterior': 'rear',
+                 'estándar': 'std', 'isométrica': 'iso',
+                 ' de ': '-', ' con ': '-', ' en ': '-', ' al ': '-', ' la ': '-', ' el ': '-', ' las ': '-', ' los ': '-', ' a ': '-', ' y ': '-'
+             };
+              for (const [key, value] of Object.entries(replacements)) {
+                 suffix = suffix.replace(new RegExp(key.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi'), value); // Escapar caracteres regex
+             }
+             suffix = suffix.normalize("NFD").replace(/[\u0300-\u036f]/g, '');
+             suffix = suffix.replace(/[^a-z0-9-]+/g, '-');
+             suffix = suffix.replace(/-+/g, '-');
+             suffix = suffix.replace(/^-|-$/g, '');
+             return suffix || 'unnamed';
+         }
+
+        // --- FUNCIÓN PARA SUGERIR Y AUTOCOMPLETAR EL ID ---
+         function suggestIdSuffix(targetElementUniqueId, sourceNameElementId, parentIdPrefix, isBase = false) {
+             const idSuffixInput = document.getElementById(isBase ? targetElementUniqueId : `${targetElementUniqueId}-id-suffix`); // ID base usa el ID directo
+             const nameInput = document.getElementById(sourceNameElementId);
+
+             if (!idSuffixInput || !nameInput) {
+                 console.warn("Suggest ID: Suffix or Name input not found for", targetElementUniqueId, sourceNameElementId);
+                 return;
+             }
+
+             const nameValue = nameInput.value.trim();
+             const currentSuffix = idSuffixInput.value.trim();
+
+             if (nameValue && currentSuffix === '') {
+                  const suggestedSuffix = generateIdSuffix(nameValue);
+                  idSuffixInput.value = suggestedSuffix;
+                  // Disparar evento oninput para actualizar full ID y prefijos hijos
+                  idSuffixInput.dispatchEvent(new Event('input', { bubbles: true }));
+             } else if (currentSuffix !== '') {
+                  // Si ya hay sufijo, solo actualiza el ID completo por si cambió el prefijo (especialmente para hijos)
+                   if (!isBase) updateFullId(targetElementUniqueId, parentIdPrefix);
+             }
+         }
+
+        // --- FUNCIONES DINÁMICAS PARA AÑADIR/QUITAR/ACTUALIZAR NIVELES ---
+
+        function createLevelHtml(levelKey, parentFullId, parentNamePrefix, index, data = {}) {
+            // console.log(`Creating HTML for ${levelKey}, parentId: ${parentFullId}, index: ${index}`, data);
+            try {
+                const config = levelConfigs[levelKey];
+                if (!config) throw new Error(`Configuración no encontrada para el nivel: ${levelKey}`);
+
+                const uniqueElementId = `${levelKey}-${parentFullId.replace(/[^a-z0-9]/gi, '')}-${index}-${Math.random().toString(36).substring(2, 9)}`;
+                const currentIdPrefix = `${parentFullId}-`;
+                const currentIdSuffix = (data.id && data.id.startsWith(currentIdPrefix)) ? data.id.substring(currentIdPrefix.length) : (data.id || '');
+                const cleanSuffix = currentIdSuffix.trim().toLowerCase().replace(/[^a-z0-9-]/gi, '');
+                const currentFullId = data.id || `${currentIdPrefix}${cleanSuffix}`; // Usar data.id si existe, si no, construirlo
+                const nameForFields = `${parentNamePrefix}[${config.prefix}][${index}]`;
+                const nextLevelKey = getNextLevelKey(levelKey);
+
+                let fieldsHtml = `
+                    <div class="level-header">
+                        <${config.levelNumber === 2 ? 'h3' : config.levelNumber === 3 ? 'h4' : 'h5'}>${config.levelName} #${index + 1}</${config.levelNumber === 2 ? 'h3' : config.levelNumber === 3 ? 'h4' : 'h5'}>
+                        <button type="button" class="remove-button action-button" title="Eliminar ${config.levelName}" onclick="removeElement('${uniqueElementId}')">&times; Eliminar</button>
+                    </div>
+
+                    <label for="${uniqueElementId}-name">Nombre ${config.levelName}:</label>
+                    <input type="text" id="${uniqueElementId}-name" name="${nameForFields}[name]" required placeholder="${config.namePlaceholder}" value="${data.name || ''}" onblur="suggestIdSuffix('${uniqueElementId}', this.id, '${currentIdPrefix}')">
+
+                    <label for="${uniqueElementId}-id-suffix">ID ${config.levelName} (Sufijo único):</label>
+                    <div class="id-input-group">
+                        <span class="id-prefix" id="${uniqueElementId}-id-prefix">${currentIdPrefix}</span>
+                        <input type="text" id="${uniqueElementId}-id-suffix" data-level="${levelKey}" data-index="${index}" data-prefix-source-id="${parentFullId}" required placeholder="${generateIdSuffix(data.name || '') || config.idPlaceholder}" value="${cleanSuffix}" oninput="handleIdInput(this); updateFullId('${uniqueElementId}', '${currentIdPrefix}')">
+                    </div>
+                    <input type="hidden" id="${uniqueElementId}-id-full" name="${nameForFields}[id]" value="${currentFullId}">
+
+                    <label for="${uniqueElementId}-imageUrl">URL Imagen (Opcional):</label>
+                    <input type="url" id="${uniqueElementId}-imageUrl" name="${nameForFields}[imageUrl]" placeholder="https://..." value="${data.imageUrl || ''}">
+
+                    <label>
+                        <input type="checkbox" id="${uniqueElementId}-isUnilateral" name="${nameForFields}[isUnilateral]" value="true" ${data.isUnilateral ? 'checked' : ''}>
+                        ¿Es Unilateral?
+                    </label>
+                `;
+
+                if (nextLevelKey) {
+                    const nextConfig = levelConfigs[nextLevelKey];
+                    const childDataArray = Array.isArray(data[nextConfig.dataKey]) ? data[nextConfig.dataKey] : [];
+                    const childrenHtml = childDataArray.map((subData, subIndex) => createLevelHtml(nextLevelKey, currentFullId, nameForFields, subIndex, subData)).join('');
+
+                    fieldsHtml += `
+                        <div id="${uniqueElementId}-${nextConfig.containerSuffix}" class="${nextConfig.containerSuffix} nested-group">
+                            ${childrenHtml}
+                        </div>
+                        <button type="button" class="action-button add-level" onclick="addLevelElement('${nextLevelKey}', '${uniqueElementId}-${nextConfig.containerSuffix}', '${uniqueElementId}-id-full')">+ Añadir ${nextConfig.levelName} (Nivel ${nextConfig.levelNumber})</button>
+                    `;
+                }
+                return `<div id="${uniqueElementId}" class="nested-group ${config.cssClass}">${fieldsHtml}</div>`;
+            } catch (error) {
+                console.error(`Error en createLevelHtml para ${levelKey} (índice ${index}):`, error, "Datos:", data);
+                return `<div class="error">Error al renderizar ${levelKey} #${index+1}. Revisa la consola.</div>`;
+            }
+        }
+
+        // Añade un nuevo elemento (div) a un contenedor
+        function addLevelElement(levelKey, containerId, parentIdInputId) {
+             // console.log(`Adding ${levelKey} to container ${containerId} with parentIdInput ${parentIdInputId}`);
+             const container = document.getElementById(containerId);
+             const parentIdInput = document.getElementById(parentIdInputId);
+             if (!container || !parentIdInput) { console.error("AddLevel: Contenedor o ID padre no encontrado:", containerId, parentIdInputId); return; }
+
+             const parentFullId = parentIdInput.value;
+             if (!parentFullId) { console.error("AddLevel: Parent Full ID está vacío:", parentIdInputId); alert("Error: El ID del nivel superior está vacío. Asegúrate de que todos los IDs estén completos."); return;}
+
+             const parentName = parentIdInput.name;
+             // CORRECCIÓN: Manejar el caso del input baseId que no tiene prefijo en 'name'
+             const parentNamePrefix = parentName === 'baseId' ? '' : parentName.substring(0, parentName.lastIndexOf('[')); // Quita el '[id]' del final
+             // console.log("Parent Name Prefix constructed:", parentNamePrefix);
+             if(parentNamePrefix === undefined || parentNamePrefix === null) { console.error("No se pudo construir el name prefix para", parentIdInputId); return;}
+
+
+             const index = container.children.length;
+             try {
+                 const html = createLevelHtml(levelKey, parentFullId, parentNamePrefix, index);
+                 container.insertAdjacentHTML('beforeend', html);
+                 // console.log(`Added element HTML to ${containerId}`);
+             } catch(error) {
+                 console.error(`Error al añadir elemento ${levelKey} a ${containerId}:`, error);
+                 alert(`Error al añadir ${levelKey}. Revisa la consola.`);
+             }
+        }
+
+        // Función para eliminar (Revisada y simplificada)
+        function removeElement(elementId) {
+            // console.log("Attempting to remove element:", elementId);
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.remove(); // Método más moderno y seguro
+                // console.log("Element removed:", elementId);
+            } else {
+                 console.warn("Element not found:", elementId);
+            }
+        }
+
+        // Limpia el input de ID
+        function handleIdInput(inputElement) {
+             inputElement.value = inputElement.value.toLowerCase().replace(/[^a-z0-9-]/gi, '');
+        }
+
+        // Actualiza el ID completo oculto y los prefijos hijos
+        function updateFullId(elementUniqueId, currentIdPrefix) {
+             const suffixInput = document.getElementById(`${elementUniqueId}-id-suffix`);
+             const fullIdInput = document.getElementById(`${elementUniqueId}-id-full`);
+             if (!suffixInput || !fullIdInput) {
+                 // console.warn("Update Full ID: Suffix or Full ID input not found for", elementUniqueId);
+                 return;
+             }
+
+             const newSuffix = suffixInput.value; // Ya limpiado por handleIdInput
+             const newFullId = `${currentIdPrefix}${newSuffix}`;
+             // suffixInput.value = newSuffix; // No necesario si handleIdInput funciona
+             fullIdInput.value = newFullId;
+             // console.log("Updated Full ID for", elementUniqueId, "to:", newFullId);
+
+             updateChildIdPrefixes(fullIdInput, newFullId); // Actualizar prefijos hijos
+         }
+
+         // Actualiza los prefijos de ID de los hijos recursivamente
+         function updateChildIdPrefixes(parentFullIdInput, newParentFullId) {
+             const parentDiv = parentFullIdInput.closest('.nested-group, form');
+             if (!parentDiv) return;
+
+             Object.keys(levelConfigs).forEach(levelKey => {
+                 const config = levelConfigs[levelKey];
+                 if (!config.containerSuffix) return;
+
+                 const container = parentDiv.querySelector(`:scope > .${config.containerSuffix}`);
+                 if (container) {
+                     const children = container.querySelectorAll(':scope > .nested-group');
+                     children.forEach(child => {
+                         const prefixSpan = child.querySelector('.id-prefix');
+                         const suffixInput = child.querySelector('input[id$="-id-suffix"]');
+                         const childFullIdInput = child.querySelector('input[id$="-id-full"]');
+
+                         if (prefixSpan && suffixInput && childFullIdInput) {
+                             const newPrefix = `${newParentFullId}-`;
+                             prefixSpan.textContent = newPrefix;
+                             const currentSuffix = suffixInput.value;
+                             childFullIdInput.value = `${newPrefix}${currentSuffix}`;
+                             // console.log("Updated Child Prefix for:", child.id, "New Full ID:", childFullIdInput.value);
+                             updateChildIdPrefixes(childFullIdInput, childFullIdInput.value); // Recursión
+                         } else {
+                              // console.warn("Could not find prefix/suffix/fullId inputs in child:", child.id);
+                         }
+                     });
+                 }
+             });
+         }
+
+
+        // --- FUNCIONES DE CARGA Y GESTIÓN DEL FORMULARIO ---
+        async function fetchExercises() {
+            // console.log("Fetching exercises...");
+            const loadingDiv = document.getElementById('loading-state');
+            const errorDiv = document.getElementById('error-state');
+            const contentDiv = document.getElementById('editor-content');
+            const groupFilterSelect = document.getElementById('group-filter-select');
+            const groupDatalist = document.getElementById('group-list');
+            const exerciseSelect = document.getElementById('exercise-select');
+
+            // Asegurar que los elementos existen antes de usarlos
+            if (!loadingDiv || !errorDiv || !contentDiv || !groupFilterSelect || !groupDatalist || !exerciseSelect) {
+                console.error("Error crítico: Elementos del DOM no encontrados al iniciar.");
+                document.body.innerHTML = '<div class="error">Error crítico: No se pudieron encontrar elementos esenciales de la página.</div>';
+                return;
+            }
+
+            loadingDiv.classList.remove('hidden'); errorDiv.classList.add('hidden'); contentDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/exercises');
+                // console.log("Fetch response status:", response.status);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Fetch Error Text:", errorText);
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+                const data = await response.json();
+                if (!data || !Array.isArray(data.exercises) || typeof data.sha !== 'string') {
+                    throw new Error("Respuesta inválida de /api/exercises");
+                }
+                // console.log("Exercises data received successfully. SHA:", data.sha);
+                exerciseList = data.exercises; currentFileSha = data.sha;
+                document.getElementById('fileSha').value = currentFileSha;
+
+                // --- Poblar selectores ---
+                // console.log("Populating selectors...");
+                groupFilterSelect.innerHTML = '<option value="">-- Todos los Grupos --</option>';
+                groupDatalist.innerHTML = '';
+                const groups = [...new Set(exerciseList.map(g => g.group))].sort();
+                groups.forEach(groupName => {
+                    groupFilterSelect.innerHTML += `<option value="${groupName}">${groupName}</option>`;
+                    groupDatalist.innerHTML += `<option value="${groupName}"></option>`;
+                });
+
+                populateExerciseSelector(''); // Llenar selector inicial de ejercicios
+
+                loadingDiv.classList.add('hidden');
+                contentDiv.classList.remove('hidden');
+                // console.log("Editor content displayed.");
+                resetForm(); // Resetear al cargar
+
+            } catch (error) {
+                 console.error("Error en fetchExercises:", error);
+                 loadingDiv.classList.add('hidden');
+                 errorDiv.textContent = `Error fatal al cargar la lista: ${error.message}. Revisa la consola del servidor (node server.js) y la consola del navegador. Asegúrate que el servidor esté corriendo y que el token de GitHub sea válido.`;
+                 errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // Llena el selector de ejercicios filtrando por grupo
+        function populateExerciseSelector(selectedGroup) {
+             const exerciseSelect = document.getElementById('exercise-select');
+             if (!exerciseSelect) return;
+             exerciseSelect.innerHTML = '<option value="">-- Añadir Nuevo Ejercicio --</option>';
+
+             const exercisesToShow = selectedGroup
+                 ? exerciseList.find(g => g.group === selectedGroup)?.items || []
+                 : exerciseList.flatMap(g => g.items); // Mostrar todos si no hay filtro
+
+             exercisesToShow.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+                 exerciseSelect.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+             });
+
+             const editModeInput = document.getElementById('editMode');
+             if (editModeInput && editModeInput.value === 'false') {
+                 exerciseSelect.value = '';
+             }
+        }
+
+        // Llena el formulario recursivamente con los datos de un ejercicio
+        function populateForm(data) {
+             // console.log("Populating form with data:", data);
+             try {
+                 document.getElementById('baseId').value = data.id || '';
+                 document.getElementById('baseName').value = data.name || '';
+                 // Grupo se setea por separado
+
+                 const variationsContainer = document.getElementById('variations-container');
+                 variationsContainer.innerHTML = ''; // Limpiar
+                 // Iterar y usar createLevelHtml para generar todo el árbol
+                 data.variations?.forEach((variationData, index) => {
+                     const html = createLevelHtml('variation', data.id, 'variations', index, variationData);
+                     variationsContainer.insertAdjacentHTML('beforeend', html);
+                 });
+                 // console.log("Form populated successfully.");
+             } catch (error) {
+                 console.error("Error en populateForm:", error, "Data:", data);
+                 alert("Error al intentar rellenar el formulario con los datos del ejercicio. Revisa la consola.");
+             }
+        }
+
+        // Carga un ejercicio existente en el formulario para editarlo
+        function loadExerciseForEdit(exerciseId) {
+             // console.log("Loading exercise for edit:", exerciseId);
+             if (!exerciseId) { resetForm(); return; }
+
+             let exerciseToEdit = null, groupName = '';
+              for (const group of exerciseList) {
+                 const foundItem = group.items.find(item => item.id === exerciseId);
+                 if (foundItem) { exerciseToEdit = foundItem; groupName = group.group; break; }
+             }
+
+             if (exerciseToEdit) {
+                 resetForm(false); // Limpiar sin recargar
+                 // console.log("Found exercise:", exerciseToEdit);
+                 document.getElementById('editMode').value = 'true';
+                 document.getElementById('originalBaseId').value = exerciseToEdit.id;
+                 document.getElementById('group').value = groupName;
+                 document.getElementById('group-filter-select').value = groupName; // Actualizar filtro
+
+                 populateForm(exerciseToEdit); // Llenar recursivamente
+
+                 document.getElementById('save-button').textContent = 'Guardar Cambios';
+             } else {
+                  console.error("Exercise not found with ID:", exerciseId);
+                  alert("Error: No se encontró el ejercicio seleccionado.");
+                  resetForm(); // Vuelve al modo añadir nuevo si no se encuentra
+             }
+         }
+
+        // Resetea el formulario al estado inicial
+        function resetForm(fetchData = false) {
+             // console.log("Resetting form. Fetch data:", fetchData);
+             form.reset(); // Resetea valores de inputs
+             document.getElementById('editMode').value = 'false';
+             document.getElementById('originalBaseId').value = '';
+             document.getElementById('group-filter-select').value = '';
+             document.getElementById('exercise-select').value = '';
+             document.getElementById('fileSha').value = currentFileSha; // Asegura SHA actualizado
+             document.getElementById('variations-container').innerHTML = ''; // Limpiar variaciones
+             if (!fetchData) { // Solo si no vamos a recargar, llenamos el selector
+                 populateExerciseSelector('');
+                 document.getElementById('exercise-select').value = '';
+             }
+             document.getElementById('save-button').textContent = 'Añadir Nuevo Ejercicio';
+         }
+
+        // Resetea y vuelve a cargar los datos de GitHub
+        function resetFormAndFetch() {
+            resetForm(true); // Limpia
+            fetchExercises(); // Recarga datos de GitHub
+        }
+
+        // --- INICIALIZACIÓN ---
+        // Espera a que el DOM esté completamente cargado antes de ejecutar fetchExercises
+        document.addEventListener('DOMContentLoaded', fetchExercises);
+
     </script>
 </body>
 </html>
